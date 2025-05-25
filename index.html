@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Universal File Viewer</title>
+  <title>Universal Previewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -38,8 +38,8 @@
   </style>
 </head>
 <body>
-  <h1>Universal File Viewer</h1>
-  <input type="text" id="fileUrl" placeholder="Paste any file URL (e.g. from archive.org)" />
+  <h1>Universal File & Website Viewer</h1>
+  <input type="text" id="fileUrl" placeholder="Paste any file or website URL (e.g. https://archive.org/...)" />
   <button onclick="previewFile()">Preview</button>
 
   <div class="preview" id="previewContainer"></div>
@@ -58,37 +58,50 @@
       const lowerUrl = url.toLowerCase();
       const isArchive = url.includes("archive.org");
 
-      if (lowerUrl.endsWith('.pdf')) {
+      // File extensions
+      const isPDF = lowerUrl.endsWith('.pdf');
+      const isDocx = lowerUrl.endsWith('.docx');
+      const isVideo = lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm') || lowerUrl.endsWith('.mov');
+      const isAudio = lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.endsWith('.ogg');
+      const isImage = lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)$/);
+      const isWebsite = lowerUrl.startsWith("http") && !isPDF && !isDocx && !isVideo && !isAudio && !isImage;
+
+      // Preview logic
+      if (isPDF) {
         container.innerHTML = `
           <p><a href="${url}" target="_blank">Open PDF in a new tab</a></p>
           <iframe src="${url}" frameborder="0"></iframe>`;
-      } else if (lowerUrl.endsWith('.docx')) {
+      } else if (isDocx) {
         container.innerHTML = `
           <p><a href="${url}" target="_blank">Open DOCX in a new tab</a></p>
           <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true" frameborder="0"></iframe>`;
-      } else if (lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm')) {
+      } else if (isVideo) {
         container.innerHTML = `
-          <p><strong>Note:</strong> Video files from archive.org may not load due to CORS policy. <br>
-          <a href="${url}" target="_blank">Click here to open the video directly</a>.</p>
+          <p><strong>Note:</strong> Video files from archive.org may not load due to CORS.<br>
+          <a href="${url}" target="_blank">Click here to open video directly</a>.</p>
           <video controls>
             <source src="${url}" type="video/${lowerUrl.endsWith('.webm') ? 'webm' : 'mp4'}">
             Your browser does not support the video tag.
           </video>`;
-      } else if (lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.endsWith('.ogg')) {
+      } else if (isAudio) {
         container.innerHTML = `
-          <p><strong>Note:</strong> Audio files from archive.org may not play due to CORS policy. <br>
-          <a href="${url}" target="_blank">Click here to open the audio directly</a>.</p>
+          <p><strong>Note:</strong> Audio files from archive.org may not load due to CORS.<br>
+          <a href="${url}" target="_blank">Click here to open audio directly</a>.</p>
           <audio controls>
             <source src="${url}">
             Your browser does not support the audio element.
           </audio>`;
-      } else if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+      } else if (isImage) {
         container.innerHTML = `
-          <p><a href="${url}" target="_blank">Open image in a new tab</a></p>
+          <p><a href="${url}" target="_blank">Open image in new tab</a></p>
           <img src="${url}" alt="Image Preview" />`;
+      } else if (isWebsite) {
+        container.innerHTML = `
+          <p><a href="${url}" target="_blank">Open website in new tab</a></p>
+          <iframe src="${url}" frameborder="0"></iframe>`;
       } else {
         container.innerHTML = `
-          <p>Preview not available for this file type or from this source.<br>
+          <p>Cannot preview this file type in browser.<br>
           <a href="${url}" target="_blank">Click here to download or open the file</a>.</p>`;
       }
     }
