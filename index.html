@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Universal File Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      background: #f0f0f0;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .preview {
+      margin-top: 20px;
+      border: 2px solid #ccc;
+      background: #fff;
+      padding: 10px;
+    }
+    iframe, video, audio, img {
+      width: 100%;
+      height: 500px;
+    }
+    audio, img {
+      height: auto;
+    }
+    a {
+      color: blue;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Universal File Viewer</h1>
+  <input type="text" id="fileUrl" placeholder="Paste any file URL (e.g. from archive.org)" />
+  <button onclick="previewFile()">Preview</button>
+
+  <div class="preview" id="previewContainer"></div>
+
+  <script>
+    function previewFile() {
+      const url = document.getElementById('fileUrl').value.trim();
+      const container = document.getElementById('previewContainer');
+      container.innerHTML = '';
+
+      if (!url) {
+        alert('Please enter a URL.');
+        return;
+      }
+
+      const lowerUrl = url.toLowerCase();
+      const isArchive = url.includes("archive.org");
+
+      if (lowerUrl.endsWith('.pdf')) {
+        container.innerHTML = `
+          <p><a href="${url}" target="_blank">Open PDF in a new tab</a></p>
+          <iframe src="${url}" frameborder="0"></iframe>`;
+      } else if (lowerUrl.endsWith('.docx')) {
+        container.innerHTML = `
+          <p><a href="${url}" target="_blank">Open DOCX in a new tab</a></p>
+          <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true" frameborder="0"></iframe>`;
+      } else if (lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm')) {
+        container.innerHTML = `
+          <p><strong>Note:</strong> Video files from archive.org may not load due to CORS policy. <br>
+          <a href="${url}" target="_blank">Click here to open the video directly</a>.</p>
+          <video controls>
+            <source src="${url}" type="video/${lowerUrl.endsWith('.webm') ? 'webm' : 'mp4'}">
+            Your browser does not support the video tag.
+          </video>`;
+      } else if (lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.endsWith('.ogg')) {
+        container.innerHTML = `
+          <p><strong>Note:</strong> Audio files from archive.org may not play due to CORS policy. <br>
+          <a href="${url}" target="_blank">Click here to open the audio directly</a>.</p>
+          <audio controls>
+            <source src="${url}">
+            Your browser does not support the audio element.
+          </audio>`;
+      } else if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+        container.innerHTML = `
+          <p><a href="${url}" target="_blank">Open image in a new tab</a></p>
+          <img src="${url}" alt="Image Preview" />`;
+      } else {
+        container.innerHTML = `
+          <p>Preview not available for this file type or from this source.<br>
+          <a href="${url}" target="_blank">Click here to download or open the file</a>.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
